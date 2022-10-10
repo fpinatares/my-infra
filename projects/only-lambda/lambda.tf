@@ -1,6 +1,9 @@
+locals {
+  function_file = "${path.module}/function/test-function.zip"
+}
 resource "aws_iam_role" "lambda_role" {
-name   = "lambda-function-role"
-assume_role_policy = <<EOF
+  name   = "lambda-function-role"
+  assume_role_policy = <<EOF
 {
  "Version": "2012-10-17",
  "Statement": [
@@ -19,10 +22,10 @@ EOF
 
 resource "aws_iam_policy" "iam_policy_for_lambda" {
  
- name         = "lambda-function-policy"
- path         = "/"
- description  = "Lambda Function Policy"
- policy = <<EOF
+  name         = "lambda-function-policy"
+  path         = "/"
+  description  = "Lambda Function Policy"
+  policy = <<EOF
 {
  "Version": "2012-10-17",
  "Statement": [
@@ -41,23 +44,24 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
- role        = aws_iam_role.lambda_role.name
- policy_arn  = aws_iam_policy.iam_policy_for_lambda.arn
+  role        = aws_iam_role.lambda_role.name
+  policy_arn  = aws_iam_policy.iam_policy_for_lambda.arn
 }
 
 data "archive_file" "zip_the_python_code" {
-type        = "zip"
-source_dir  = "${path.module}/function/"
-output_path = "${path.module}/function/test-function.zip"
+  type        = "zip"
+  source_dir  = "${path.module}/function/"
+  output_path = local.function_file
 }
 
 resource "aws_lambda_function" "terraform_lambda_func" {
-filename                       = "${path.module}/function/test-function.zip"
-function_name                  = "only-lambda-function"
-role                           = aws_iam_role.lambda_role.arn
-handler                        = "index.lambda_handler"
-runtime                        = "python3.9"
-depends_on                     = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+  filename                       = local.function_file
+  function_name                  = "only-lambda-function"
+  role                           = aws_iam_role.lambda_role.arn
+  handler                        = "index.lambda_handler"
+  runtime                        = "python3.9"
+  depends_on                     = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+  source_code_hash               = filebase64sha256(local.function_file)
 }
 
 // After adding the Api Gateway

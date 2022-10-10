@@ -1,7 +1,8 @@
 import json
 
 def lambda_handler(event, context):
-  #message = 'Hello {} !'.format(event['key1'])
+  body = json.loads(event['body'])
+  message = 'Hello {} !'.format(body['key1'])
   response = {
       "statusCode": 200,
       "headers": {
@@ -15,6 +16,6 @@ def lambda_handler(event, context):
     }
   return {
     "statusCode": 200,
-    "body": json.dumps('Cheers from AWS Lambda!!')
+    "body": json.dumps(message)
   }
 
