@@ -1,5 +1,6 @@
 locals {
-  function_file = "${path.module}/function/test-function.zip"
+  function_file = "${path.module}/functions/test-function.zip"
+  source_dir = "${path.module}/functions/"
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -21,6 +22,10 @@ resource "aws_iam_role" "lambda_role" {
 EOF
 }
 
+/*
+Statement 1 - Permissions to log
+Statement 2 - Permissions to interact with DynamoDB
+*/
 resource "aws_iam_policy" "iam_policy_for_lambda" {
  
   name         = "lambda-function-policy"
@@ -38,11 +43,25 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
      ],
      "Resource": "arn:aws:logs:*:*:*",
      "Effect": "Allow"
+   },
+   {
+    "Effect": "Allow",
+    "Action": [
+     "dynamodb:BatchGetItem",
+     "dynamodb:GetItem",
+     "dynamodb:Query",
+     "dynamodb:Scan",
+     "dynamodb:BatchWriteItem",
+     "dynamodb:PutItem",
+     "dynamodb:UpdateItem"
+    ],
+    "Resource": "${aws_dynamodb_table.dynamodb-only-lambda.arn}"
    }
  ]
 }
 EOF
 }
+
 
 resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
   role        = aws_iam_role.lambda_role.name
@@ -51,7 +70,7 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 
 data "archive_file" "zip_the_python_code" {
   type        = "zip"
-  source_dir  = "${path.module}/function/"
+  source_dir  = local.source_dir
   output_path = local.function_file
 }
 

@@ -21,11 +21,6 @@ resource "aws_dynamodb_table" "dynamodb-only-lambda" {
     type = "N"
   }
 
-  ttl {
-    attribute_name = "TimeToExist"
-    enabled        = false
-  }
-
   global_secondary_index {
     name               = "NameIndex"
     hash_key           = "Name"
