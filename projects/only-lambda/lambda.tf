@@ -1,6 +1,7 @@
 locals {
   function_file = "${path.module}/function/test-function.zip"
 }
+
 resource "aws_iam_role" "lambda_role" {
   name   = "lambda-function-role"
   assume_role_policy = <<EOF

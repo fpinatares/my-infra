@@ -1,19 +1,12 @@
 import json
+import boto3
+import uuid
 
 def lambda_handler(event, context):
+  dynamodb = boto3.client('dynamodb')
   body = json.loads(event['body'])
-  message = 'Hello {} !'.format(body['key1'])
-  response = {
-      "statusCode": 200,
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "isBase64Encoded": False,
-      "multiValueHeaders": { 
-        "X-Custom-Header": ["My value", "My other value"],
-      },
-      "body": "{\n  \"TotalCodeSize\": 104330022,\n  \"FunctionCount\": 26\n}"
-    }
+  dynamodb.put_item(TableName='Persons', Item={'Id':{'S':str(uuid.uuid4)},'Name':{'S':body['name']},'Age':{'N':body['age']}})
+  message = 'Hello {} !'.format(body['name'])
   return {
     "statusCode": 200,
     "body": json.dumps(message)
